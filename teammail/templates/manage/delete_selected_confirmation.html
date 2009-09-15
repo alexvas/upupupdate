@@ -1,0 +1,59 @@
+{% extends "admin/delete_selected_confirmation.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | Team Mail management{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="/">Team Mail</a></h1>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+{% if object %}
+    <a href="../../../">Manage</a> &rsaquo; 
+    <a href="../../">{{ opts.verbose_name_plural|capfirst }}</a> &rsaquo;
+    <a href="../">{{ object|truncatewords:"18" }}</a> &rsaquo;
+    Delete
+{% else %}
+     <a href="../">Manage</a> &rsaquo; 
+     <a href="./">{{ opts.verbose_name_plural|capfirst }}</a> &rsaquo;
+     Delete multiple objects
+{% endif %}
+</div>
+{% endblock %}
+
+
+{% block content %}
+{% if perms_lacking %}
+{% if object %}
+    <p>{% blocktrans with object as escaped_object %}Deleting the {{ object_name }} '{{ escaped_object }}' would result in deleting related objects, but your account doesn't have permission to delete the following types of objects:{% endblocktrans %}</p>
+{% else %}
+    <p>{% blocktrans %}Deleting the {{ object_name }} would result in deleting related objects, but your account doesn't have permission to delete the following types of objects:{% endblocktrans %}</p>
+{% endif %}
+    <ul>
+    {% for obj in perms_lacking %}
+        <li>{{ obj }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+{% if object %}
+    <p>{% blocktrans with object as escaped_object %}Are you sure you want to delete the {{ object_name }} "{{ escaped_object }}"? All of the following related items will be deleted:{% endblocktrans %}</p>
+    <ul>{{ deleted_objects|unordered_list }}</ul>
+{% else %}
+    <p>{% blocktrans %}Are you sure you want to delete the selected {{ object_name }} objects? All of the following objects and it's related items will be deleted:{% endblocktrans %}</p>
+    {% for deleteable_object in deletable_objects %}
+        <ul>{{ deleteable_object|unordered_list }}</ul>
+    {% endfor %}
+{% endif %}
+    <form action="" method="post">
+    <div>
+    {% for obj in queryset %}
+    <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk }}" />
+    {% endfor %}
+    <input type="hidden" name="action" value="delete_selected" />
+    <input type="hidden" name="post" value="yes" />
+    <input type="submit" value="{% trans "Yes, I'm sure" %}" />
+    </div>
+    </form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,20 @@
+# ignore compile python code
+*.py[co]
+
+# ignore patch junk
+ #.*#
+
+# ignore backups left by some editors
+*~
+*.bak
+
+# ignore GWT intermediate output 
+*.class
+
+# aep generated media
+.dynamic_media/
+_generated_media
+
+#gwt compiler output
+saa/gwt-src/*/war/
+gwt/*/war/

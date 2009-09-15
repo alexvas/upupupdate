@@ -1,0 +1,55 @@
+application: upupupdate
+version: basic
+runtime: python
+api_version: 1
+
+handlers:
+- url: /remote-secret-51768url
+  script: $PYTHON_LIB/google/appengine/ext/remote_api/handler.py
+  secure: optional
+  login: admin
+
+- url: /favicon.ico
+  mime_type: image/x-icon
+  upload: teammail/media/teammail.ico
+  static_files: teammail/media/teammail.ico
+  expiration: '10d'
+
+- url: /cron/.*
+  script: common/appenginepatch/main.py
+  login: admin
+
+- url: /media
+  static_dir: _generated_media
+  secure: optional
+  expiration: '3650d'
+
+- url: /admin/.*
+  script: common/appenginepatch/main.py
+  secure: optional
+
+- url: /gwt/([^/]+)/nocache\.js
+  static_files: gwt/\1Bundle/war/\1Bundle/\1Bundle.nocache.js
+  upload: gwt/([^/]+)Bundle/war/\1Bundle/\1Bundle.nocache.js
+  secure: optional
+
+- url: /gwt/([^/]+)/(.*)
+  static_files: gwt/\1Bundle/war/\1Bundle/\2
+  upload: gwt/([^/]+)Bundle/war/\1Bundle/.*
+  secure: optional
+
+- url: /.*
+  script: common/appenginepatch/main.py
+  secure: optional
+
+skip_files:
+- ^app\.ya?ml$
+- ^index\.ya?ml$
+- ^(?:.*/)?#.*#$
+- ^(?:.*/)?.*~$
+- ^(?:.*/)?.*/RCS/
+- ^(?:.*/)?\.
+- ^(?:.*/)?.*\.(?:pyc|pyo|class|java|bak|iml|ipr|iws|launch|sh|bat)$
+- ^gwt/[^/]+/src/
+- ^.*/WEB-INF/
+- ^(?:.*/)?[A-Z]+$

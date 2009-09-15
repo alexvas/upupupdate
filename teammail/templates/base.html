@@ -1,0 +1,75 @@
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+    dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}"
+    xml:lang="{% firstof LANGUAGE_CODE 'en' %}"
+    lang="{% firstof LANGUAGE_CODE 'en' %}">
+  <head>
+    <title>{% block title %}Team Mail{% endblock %}</title>
+      <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    {% block css %}
+      <link rel="stylesheet" type="text/css"  media="screen, projection" href="{{ MEDIA_URL }}combined-{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}.css" />
+      <link rel="stylesheet" type="text/css"  media="print" href="{{ MEDIA_URL }}combined-print-{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}.css" />
+      <!--[if lt IE 8]>
+        <link rel="stylesheet" type="text/css" media="screen, projection" href="{{ MEDIA_URL }}ie.css">
+      <![endif]-->
+    {% endblock %}
+
+    {% block extra-head %}{% endblock %}
+  </head>
+
+  <body>
+  <div id="container" class="container">
+    {% block header %}
+      <div id="header" class="span-24 last">
+        <a class="logo prepend-top" href="/"><img src="{{ MEDIA_URL }}teammail/teammaillogo.png" alt="" /></a>
+        <div class="header prepend-top">
+          <h1>Team Mail</h1>
+          <h3 class="alt">Be in synch</h3>
+        </div>
+      </div>
+      <hr />
+    {% endblock %}
+    <div id="middle" class="span-17 colborder">
+      {% block content-header %}
+        {% if error %}<div class="error">{{ error }}</div>{% endif %}
+        {% if info %}<div class="info">{{ info }}</div>{% endif %}
+        {% if messages %}
+          {% for message in messages %}
+            <div class="info">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endblock %}
+      {% block content %}{% endblock %}
+    </div>
+    <div id="sidebar" class="span-6 last">
+      <div class="box" id="toolbox">
+          {% if user.is_authenticated %}
+            <h4>{% firstof user.first_name user.username %} {{ user.last_name }}</h4>
+          {% endif %}
+          <h4><a href="/help/usingteammail/">Help</a></h4>
+          {% if user.is_authenticated %}
+            {% if user.is_staff %}
+              <h4><a href="/admin/">administrate</a> data</h4>
+            {% else %}
+              <h4><a href="/manage/teammail/">manage</a> data</h4>
+            {% endif %}
+            <h4><a href="{% url django.contrib.auth.views.logout %}">sign out</a></h4>
+          {% else %}
+            <h4><a href="{% url teammail.views.fork %}">sign in</a> or <a href="{% url registration_register %}">register</a></h4>
+          {% endif %}
+      </div>
+      {% block sidebar %}{% endblock %}
+    </div>
+    <hr />
+    <div id="footer" class="span-24 last">
+      <div class="right">
+        Powered by <a href="http://code.google.com/p/app-engine-patch/">app-engine-patch</a><br/>&nbsp;
+      </div>
+    </div>
+
+  </div>
+  </body>
+</html>

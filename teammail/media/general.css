@@ -1,0 +1,34 @@
+#header a.logo {
+  display: block;
+  float: left;
+}
+#header div.header {
+  float: left;
+}
+#footer div.right {
+  float: right;
+}
+
+.errornote, .errorlist {
+	-moz-background-clip:border;
+	-moz-background-inline-policy:continuous;
+	-moz-background-origin:padding;
+	background:#FFFFCC url(../img/admin/icon_error.gif) no-repeat scroll 5px 0.3em;
+	border:1px solid red;
+	color:red;
+	display:block;
+	font-size:12px !important;
+	margin:0 0 3px;
+	padding:4px 5px 4px 25px;
+}
+
+tr.row1 {
+	background-color:#DDD;
+}
+
+.inline-group .tabular td.date p.description {
+    font-size: 9px;
+    font-weight: bold;
+    color: #666;
+    padding-left: 0;
+}

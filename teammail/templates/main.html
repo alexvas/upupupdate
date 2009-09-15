@@ -1,0 +1,9 @@
+{% extends 'teammail/base.html' %}
+
+{% block content %}
+  {% if user.is_authenticated %}
+  &nbsp;
+{% else %}
+    Please, <a href="{% url teammail.views.fork %}">sign in</a> or <a href="{% url registration_register %}">register</a>.
+  {% endif %}
+{% endblock %}

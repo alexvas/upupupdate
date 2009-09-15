@@ -1,0 +1,15 @@
+{% extends "admin/change_form.html" %}
+
+{% block title %}{{ title }} | Team Mail management{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="/">Team Mail</a></h1>
+{% endblock %}
+
+{% block breadcrumbs %}{% if not is_popup %}
+  <div class="breadcrumbs">
+    <a href="../../">Manage</a> &rsaquo; 
+    <a href="../">{{ opts.verbose_name_plural|capfirst }}</a> &rsaquo; 
+    {% if add %}Add {{ opts.verbose_name }}{% else %}{{ original|truncatewords:"18" }}{% endif %}
+  </div>
+{% endif %}{% endblock %}

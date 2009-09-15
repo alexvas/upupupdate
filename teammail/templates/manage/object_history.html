@@ -1,0 +1,16 @@
+{% extends "admin/object_history.html" %}
+
+{% block title %}{{ title }} | Team Mail management{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="/">Team Mail</a></h1>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="../../../">Manage</a> &rsaquo; 
+    <a href="../../">{{ module_name }}</a> &rsaquo; 
+    <a href="../">{{ object|truncatewords:"18" }}</a> &rsaquo; 
+    History
+</div>
+{% endblock %}

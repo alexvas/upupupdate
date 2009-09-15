@@ -1,0 +1,6 @@
+cron:
+- description: scheduled mailing
+  url: /cron/mailing
+  schedule: every day 00:01
+  timezone: America/Inuvik
+  
