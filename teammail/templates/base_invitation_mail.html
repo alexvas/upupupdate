@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style>
+  a.attached { margin: 10px; display: block; float: left; overflow: hidden; }
+  p { margin: 0.49cm auto; }
+  body { font-family: 'Verdana, sans-serif'; font-size: 11pt; }
+</style>
+</head>
+<body>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+{{ quotation|safe }}
+<tr><td>Dear {{ contact.name }},<br/><br/>Please submit a report today.<br/><br/>
+Yours sincerely,<br/>
+{{ team.name }}
+  </td></tr>
+  <tr><td>
+    <hr/>
+    &mdash;&nbsp;sent from <a href="{{ homepage }}">Up up update</a>&nbsp;&mdash;
+  </td></tr>
+</table>
+</body>
+</html>

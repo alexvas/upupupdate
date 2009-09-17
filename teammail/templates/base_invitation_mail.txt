@@ -1,0 +1,10 @@
+{{ quotation }}
+________________________________________________________
+Dear {{ contact.name }},
+
+Please submit a report today.
+
+Yours sincerely, 
+{{ team.name }}. 
+________________________________________________________
+-- sent from Up up update --

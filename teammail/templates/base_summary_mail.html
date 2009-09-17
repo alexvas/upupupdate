@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style>
+  a.attached { margin: 10px; display: block; float: left; overflow: hidden; }
+  p { margin: 0.49cm auto; }
+  body { font-family: 'Verdana, sans-serif'; font-size: 11pt; }
+</style>
+</head>
+<body>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+{% for absent in  absents %}
+<tr><td><h2>{{ absent.name }}</h2></td></tr>
+<tr><td>DID NOT SUBMIT AN UPDATE!<hr/></td></tr>
+{% endfor  %}
+
+{% for reporter in reporters %}
+<h2>{{ reporter.name }}</h2>
+  <tr><td>{{ reporter.message|safe }}</td></tr>
+  {% if reporter.images  %}
+  <tr><td>
+  <hr/>
+  <h3>Click a thumbnail below to download full-sized version:</h3>
+    {% for file in reporter.images %}
+      <a href="{{ file.link }}" class="attached"><img src="{{ file.src }}" style="width: {{ file.scaled_width }}; height: {{ file.scaled_height }};" alt="{{ file.name }}" title="{{ file.name }}"/></a>
+    {% endfor  %}
+  </td></tr>
+  {% endif  %}
+  {% if reporter.others  %}
+  <tr><td>
+  <hr/>
+  <h3>Related stuff:</h3>
+  <ol>
+    {% for file in reporter.others %}
+      <li><a href="{{ file.link }}" class="attached">{{ file.name }}</a></li>
+    {% endfor  %}
+  </ol>
+  </td></tr>
+  {% endif  %}
+{% endfor  %}
+  <tr><td>
+    <hr/>
+    &mdash;&nbsp;sent from <a href="{{ homepage }}">Up up update</a>&nbsp;&mdash;
+  </td></tr>
+</table>
+</body>
+</html>

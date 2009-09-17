@@ -1,0 +1,26 @@
+{% for absent in  absents %}
+--== {{ absent.name }} ==--
+DID NOT SUBMIT AN UPDATE!
+________________________________________________________
+{% endfor  %}
+
+{% for reporter in reporters %}
+--== {{ reporter.name }} ==--
+  {{ reporter.message|striptags }}
+  {% if reporter.images  %}
+________________________________________________________
+Related images:
+    {% for file in reporter.images %}
+      {{ file.link }}
+    {% endfor  %}
+  {% endif  %}
+  {% if reporter.others  %}
+________________________________________________________
+Related staff:
+    {% for file in reporter.others %}
+      {{ file.link }}
+    {% endfor  %}
+  {% endif  %}
+________________________________________________________
+{% endfor  %}
+-- sent from Up up update --
