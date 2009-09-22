@@ -12,7 +12,7 @@ admin.site.register(models.Team, Team)
 class Division(admin.ModelAdmin):
     form = forms.Division
 
-admin.site.register(models.Division, Division)
+#admin.site.register(models.Division, Division)
 
 
 class Contact(admin.ModelAdmin):

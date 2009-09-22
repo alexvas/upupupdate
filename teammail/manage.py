@@ -58,7 +58,7 @@ class InTeam(django_admin.ModelAdmin):
 class Division(InTeam, admin.Report):
     pass
 
-site.register(models.Division, Division)
+#site.register(models.Division, Division)
 
 
 

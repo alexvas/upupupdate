@@ -49,7 +49,7 @@ class Contact(Logged):
     is_active = db.BooleanProperty(('is active'), default=True)
     team = db.ReferenceProperty(Team, required=True)
     email = db.EmailProperty(required=True)
-    division = KeyListProperty(Division)
+#    division = KeyListProperty(Division)
 
     def __unicode__(self):
         if self.name:

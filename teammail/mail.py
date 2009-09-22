@@ -12,7 +12,7 @@ MAX_SIZE = 200
 QUOTATION = ("^^^ Reply above this line to post a reply ^^^")
 QUOTATION_HTML = ('<tr class="upupupdate_quote"><td>' + QUOTATION + '<hr/></td></tr>')
 
-HALF_A_DAY = datetime.timedelta(12)
+HALF_A_DAY = datetime.timedelta(hours=12)
 
 def _get_scaled_name(name):
     if name.endswith('.jpg'):
