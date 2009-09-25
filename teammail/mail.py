@@ -1,7 +1,7 @@
 import re, copy, datetime
 from google.appengine.api import mail as ae_mail
 from ragendja.template import render_to_string
-from teammail import models, dating
+from teammail import models, dating, utils
 
 FROM_ADDRESS = 'Up up update! <rakesh.agrawal@gmail.com>'
 REPLY_ADDRESS = 'incoming@smtp2web.com'
@@ -38,12 +38,8 @@ def _send_team_mail(team, to, subject, html, text, cc=None):
     m.send()
 
 
-def _get_contacts(team):
-    return team.contact_set.filter('is_active', True).order('name').fetch(models.ALL) 
-
-
 def send_team_personal_mail(request, subject, team, html_template, text_template, html_data, text_data):
-    for contact in _get_contacts(team):
+    for contact in utils.get_contacts(team):
         html_data['contact'] = contact
         text_data['contact'] = contact
         html = render_to_string(request, html_template, html_data)
@@ -52,7 +48,7 @@ def send_team_personal_mail(request, subject, team, html_template, text_template
 
 
 def send_team_common_mail(subject, team, html, text):
-    emails = map(lambda x: x.email, _get_contacts(team))
+    emails = map(lambda x: x.email, utils.get_contacts(team))
     emails = filter(lambda x: x, emails)
     if not emails:
         return
@@ -89,7 +85,7 @@ def summary(request, team):
     else:
         start_of_report_day = some_noon
     
-    contacts = _get_contacts(team)
+    contacts = utils.get_contacts(team)
     absents = []
     reporters = []
     

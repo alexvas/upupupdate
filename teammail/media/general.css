@@ -13,7 +13,7 @@
 	-moz-background-clip:border;
 	-moz-background-inline-policy:continuous;
 	-moz-background-origin:padding;
-	background:#FFFFCC url(../img/admin/icon_error.gif) no-repeat scroll 5px 0.3em;
+	background:#FFFFCC url(../admin_media/img/admin/icon_error.gif) no-repeat scroll 5px 0.3em;
 	border:1px solid red;
 	color:red;
 	display:block;
@@ -32,3 +32,16 @@ tr.row1 {
     color: #666;
     padding-left: 0;
 }
+
+form.dashboard label {
+	display: block;
+}
+
+.gwt-SuggestBoxPopup td {
+	padding: 0 !important;
+}
+
+.gwt-SuggestBoxPopup th {
+	padding: 0 !important;
+}
+

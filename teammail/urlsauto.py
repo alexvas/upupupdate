@@ -11,4 +11,6 @@ rootpatterns = patterns('teammail.views',
     (r'^smtp2web_d2577e1b08ca67b4.html$', 'empty'),
     (r'^fork/', 'fork'),
     (r'^manage/', include(manage.site.urls)),
+    (r'^dashboard/', 'app_admin_dashboard'),
+    (r'^team_dashboard/', 'team_admin_dashboard'),
 )

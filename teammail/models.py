@@ -47,8 +47,9 @@ class Division(Logged):
 class Contact(Logged):
     name = db.StringProperty()
     is_active = db.BooleanProperty(('is active'), default=True)
-    team = db.ReferenceProperty(Team, required=True)
+#    team = db.ReferenceProperty(Team, required=True)
     email = db.EmailProperty(required=True)
+    teams = KeyListProperty(Team)
 #    division = KeyListProperty(Division)
 
     def __unicode__(self):

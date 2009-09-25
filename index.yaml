@@ -33,3 +33,21 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+# Used 204 times in query history.
+- kind: teammail_contact
+  properties:
+  - name: is_active
+  - name: name
+
+# Used 418 times in query history.
+- kind: teammail_contact
+  properties:
+  - name: is_active
+  - name: teams
+  - name: name
+
+# Used 751 times in query history.
+- kind: teammail_team
+  properties:
+  - name: is_active
+  - name: name
