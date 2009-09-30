@@ -32,14 +32,13 @@ public class Dashboard implements EntryPoint {
     public void onModuleLoad2() {
         Set<String> teamNames = DataSource.INSTANCE.getTeams().keySet();
 
-        int i = 0;
-        for (String teamName : teamNames) {
-            Element input = Document.get().getElementById("team_" + i);
-            ++i;
+        for (String teamKey : teamNames) {
+            String id = teamKey + "-team";
+            Element input = Document.get().getElementById(id);
             if (input == null) {
                 continue;
             }
-            SuggestBox box = SuggestBox.wrap(new TeamOracle(teamName), input);
+            SuggestBox box = SuggestBox.wrap(new TeamOracle(teamKey), input);
             new EnterStopper(box).addKeyHandlersTo(box);
         }
     }

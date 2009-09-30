@@ -19,18 +19,14 @@ def main(request):
         )
 
 
-def _get_active_teams():
-    return users.Team.all().filter('is_active', True).fetch(models.ALL)
-
-
 def invitation(request):
-    for team in _get_active_teams():
+    for team in utils.get_active_teams():
         mail.invitation(request, team)
     return HttpResponse()
 
 
 def digest(request):
-    for team in _get_active_teams():
+    for team in utils.get_active_teams():
         mail.digest(request, team)
     return HttpResponse()
 
@@ -205,12 +201,35 @@ def _embed_application_admin_team_list_forms(teams, request=None):
             team.form = forms.AppAdminTeamListEntry(prefix=unicode(team.key()), auto_id=False) 
 
 
+def _embed_application_admin_team_assign_user_forms(teams, request=None):
+    for team in teams:
+        if request:
+            team.assign_form = forms.AppAdminAssignUserToTeamOrCreateThem(request.POST, prefix=unicode(team.key()), auto_id="%s") 
+        else:
+            team.assign_form = forms.AppAdminAssignUserToTeamOrCreateThem(prefix=unicode(team.key()), auto_id="%s") 
+
+
 def update_team_set(user, teams):
     was = set(user.teams)
     _is = set(teams)
     if was != _is:
         user.teams = _is
         user.put()
+
+
+def _create_user(request, email, name, teams):
+    user = users.User.objects.create_user(email, email)
+
+    if name:
+        user.name = name
+            
+    if teams:
+        user.teams = teams
+                
+    user.put()
+    from registration.utils import password_reset
+    password_reset(request, user, creation=True)
+    return user
 
 
 @staff_only
@@ -234,17 +253,25 @@ def app_admin_dashboard(request):
         add_user_to_team = request.POST['add_user_to_team']
     
     if add_user_to_team:
-        num = add_user_to_team.split('_')[1]
-        num = int(num)
-        team = teams[num]
-        email = request.POST[add_user_to_team]
-        email = re.sub(r'^[^<]*<([^>]+)>.*$', r'\1', email)
-        user = users.User.all().filter("email", email).filter("is_active", True).get()
-        if user:
-            user.teams.append(team.key())
-            user.put()
-                    
-        return HttpResponseRedirect(request.get_full_path())
+        _embed_application_admin_team_assign_user_forms(teams, request)
+        valid = True
+        for team in teams:
+            form = team.assign_form
+                        
+            if not form.is_valid():
+                valid = False
+            
+        if valid:
+            for team in teams:
+                form = team.assign_form
+                f = form.fields['team']
+                if f.user:
+                    f.user.teams.append(team.key())
+                    f.user.put()
+                    return HttpResponseRedirect(request.get_full_path())
+                if f.email:
+                    _create_user(request, f.email, f.name, [team])
+                    return HttpResponseRedirect(request.get_full_path())
 
     elif 'add_team' == action:
         formAddTeam = forms.AppAdminAddTeam(request.POST)
@@ -278,37 +305,13 @@ def app_admin_dashboard(request):
             cleaned_data = formAddUser.cleaned_data
 
             email = cleaned_data['email']
-            user = users.User.objects.create_user(email, email)
-            
+            name = cleaned_data['name']
             teams = users.Team.get(cleaned_data['teams'])
             if teams:
                 teams = filter(lambda x: x, teams)
                 teams = map(lambda x: x.key(), teams)
-            
-            if teams:
-                user.teams = teams
-                
-            name = cleaned_data['name']
-            if name:
-                user.name = name
 
-            user.put()
-            from registration.utils import password_reset
-            password_reset(request, user, creation=True)
-            return HttpResponseRedirect(request.get_full_path())
-        
-    elif 'assign_teams_to_users' == action:
-        _embed_application_admin_user_list_forms(_users, request)
-        
-        valid = True
-        for user in _users:
-            if not user.form.is_valid():
-                valid = False
-                continue
-            cleaned_data = user.form.cleaned_data
-            update_team_set(user, cleaned_data['teams'])
-            
-        if valid:
+            _create_user(request, email, name, teams)
             return HttpResponseRedirect(request.get_full_path())
         
     elif 'inactivate_users' == action:
@@ -335,8 +338,11 @@ def app_admin_dashboard(request):
     if not formAddUser:
         formAddUser = forms.AppAdminAddUser()
         
-    if teams and not 'form' in dir(teams[0]):
-        _embed_application_admin_team_list_forms(teams)
+    if teams: 
+        if not 'form' in dir(teams[0]):
+            _embed_application_admin_team_list_forms(teams)
+        if not 'assign_form' in dir(teams[0]):
+            _embed_application_admin_team_assign_user_forms(teams)
         
     if _users and not 'form' in dir(_users[0]):
         _embed_application_admin_user_list_forms(_users)

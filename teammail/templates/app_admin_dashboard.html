@@ -14,7 +14,13 @@
 	    	{% endfor %}
 		    </ul>
 	  		<form action="" method="post">
-			<input type="text" id="team_{{ forloop.counter0 }}" name="team_{{ forloop.counter0 }}" autocomplete="off" />
+			{{ team.assign_form.non_field_errors }}
+			{% for f in team.assign_form %}
+				{{ f.errors }}
+				{{ f }}
+			{% endfor %}
+
+<!-- 			<input type="text" id="team_{{ forloop.counter0 }}" name="team_{{ forloop.counter0 }}" autocomplete="off" /> -->
 	    	<button type="submit" name="add_user_to_team" value="team_{{ forloop.counter0 }}">Add</button>
 	  		</form>
     		<hr/>
@@ -58,8 +64,8 @@
 <iframe src="javascript:''" id="__gwt_historyFrame" style="width:0;height:0;border:0"></iframe>
 <script type="text/javascript">
 {% block gwt_js_data %}
-var teams = [
-	{% for team in teams %}{% if forloop.first %}{% else %}, {% endif %}"{{ team.name }}"{% endfor %}
+var team_keys = [
+	{% for team in teams %}{% if forloop.first %}{% else %}, {% endif %}"{{ team.key }}"{% endfor %}
 ];
 
 {% for team in teams %}

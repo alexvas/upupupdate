@@ -33,10 +33,10 @@ public enum DataSource {
             return teams;
         }
         teams = new LinkedHashMap<String, Set<String>>();
-        EmbeddedArray names = getEmbeddedArray("teams");
+        EmbeddedArray keys = getEmbeddedArray("team_keys");
         
-        for (int i = 0, n = names.length(); i < n; ++i) {
-            String name = names.get(i);
+        for (int i = 0, n = keys.length(); i < n; ++i) {
+            String key = keys.get(i);
             EmbeddedArray teamContactKeys = getEmbeddedArray("team_" + i);
             Set<String> members = new HashSet<String>();
             for (int j = 0, m = teamContactKeys.length(); j < m; ++j) {
@@ -45,7 +45,7 @@ public enum DataSource {
             }
             Set<String> complement = new LinkedHashSet<String>(getUsers().values());
             complement.removeAll(members);
-            teams.put(name, complement);
+            teams.put(key, complement);
         }
         
         return teams;        

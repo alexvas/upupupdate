@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import re
 from django import forms
 from teammail import models, utils
 from teammates import users
@@ -117,7 +118,6 @@ class AppAdminAddUser(forms.Form):
         self.fields['teams'] = UserTeamsField()
 
 
-
 class AppAdminAddTeam(forms.Form):
     name = UniqueTeamNameField()
 
@@ -126,6 +126,55 @@ class AppAdminAddTeam(forms.Form):
         
         super(AppAdminAddTeam, self).__init__(*args, **kw)
 
+
+
+class AssignUserToTeamOrCreateThemField(forms.CharField):
+    
+    def __init__(self, *args, **kw):
+        kw['required'] = False
+        self.name = None
+        self.email = None
+        self.user = None        
+        super(AssignUserToTeamOrCreateThemField, self).__init__(*args, **kw)
+
+    
+    def clean(self, value):
+        value = super(AssignUserToTeamOrCreateThemField, self).clean(value)
+        if value:
+            value = value.strip()
+        if not value:
+            return None
+        active_email = re.sub(r'^[^<]*<([^>]+)>.*$', r'\1', value)
+        user = users.User.all().filter("email", active_email).filter("is_active", True).get()
+        if user:
+            self.user = user
+            return value
+        
+        email_match = re.search(r"[\w\d._-]+@[\w\d._-]+", value)
+        if not email_match:
+            raise forms.ValidationError('No email found in input')
+        email = email_match.group(0)
+
+        same_user = users.User.all().filter('email', email).get()
+        if same_user:
+            raise forms.ValidationError('user "%s" already has email "%s" set' % (same_user, email))
+
+        self.email = email
+        rest = value.replace(email, '')
+        rest = re.sub(r"\s+", " ", rest)
+        rest = re.sub(r'[".,<>]', " ", rest)
+        self.name = rest.strip()
+        
+        return value
+
+
+    def widget_attrs(self, widget):
+        return {'autocomplete': 'off'}
+
+
+
+class AppAdminAssignUserToTeamOrCreateThem(forms.Form):
+    team = AssignUserToTeamOrCreateThemField()
 
 
 class AppAdminUserListEntry(forms.Form):

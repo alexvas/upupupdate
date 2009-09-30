@@ -49,11 +49,11 @@ class User(DjangoUser):
 
     def __unicode__(self):
         if self.name:
-            try:
-                return "%s <%s>" % (self.name, self.email)
-            except:
-                pass
-        return self.name or 'No name'
+            name = self.name
+        else:
+            name = 'No name'
+            
+        return "%s <%s>" % (name, self.email)
 
 
 
