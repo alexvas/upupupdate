@@ -1,6 +1,6 @@
 {{ quotation }}
 ________________________________________________________
-Dear {{ contact.name }},
+Dear {{ user.name }},
 
 Please submit a report today.
 

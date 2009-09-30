@@ -55,20 +55,6 @@ class InTeam(django_admin.ModelAdmin):
 
 
 
-class Division(InTeam, admin.Report):
-    pass
-
-#site.register(models.Division, Division)
-
-
-
-class Contact(InTeam, admin.Contact):
-    pass
-
-site.register(models.Contact, Contact)
-
-
-
 class Report(InTeam, admin.Report):
     pass
 

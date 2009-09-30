@@ -1,19 +1,15 @@
 # -*- coding: utf-8 -*-
-#import logging
 from HTMLParser import HTMLParser
-from django.contrib.auth import models as auth_models
 from django.contrib.auth.decorators import login_required
-#from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, \
     HttpResponseForbidden
 from ragendja.auth.decorators import staff_only
 from ragendja.template import render_to_response
 from teammail import models, forms, mail, utils
+from teammates import users
 import email
 import re
 
-
-#from ragendja.dbutils import get_object_or_404
 
 
 def main(request):
@@ -24,7 +20,7 @@ def main(request):
 
 
 def _get_active_teams():
-    return models.Team.all().filter('is_active', True).fetch(models.ALL)
+    return users.Team.all().filter('is_active', True).fetch(models.ALL)
 
 
 def invitation(request):
@@ -33,9 +29,9 @@ def invitation(request):
     return HttpResponse()
 
 
-def summary(request):
+def digest(request):
     for team in _get_active_teams():
-        mail.summary(request, team)
+        mail.digest(request, team)
     return HttpResponse()
 
     
@@ -111,20 +107,30 @@ class QuoteRemover(HTMLParser):
             self.out += data
 
 
+def get_charset(message, default="ascii"):
+    """Get the message charset"""
+
+    if message.get_content_charset():
+        return message.get_content_charset()
+
+    if message.get_charset():
+        return message.get_charset()
+
+    return default
+
+
 def incoming(request):
     message = email.message_from_string(request.raw_post_data);
-    import logging
+#    import logging
     
     plain = u''
     html = u''
     fr = u''
     to = u''
+    message_charset = get_charset(message) 
+    
     for p in message.walk():
-        charset = 'utf-8'
-        c = p.get_charset()
-        if c:
-            charset = c
-        logging.debug(u"charset is %s", charset)
+        charset = get_charset(p, message_charset)
         if ('text/plain' == p.get_content_type()):
             plain = unicode(p.get_payload(decode=True), charset)
         elif ('text/html' == p.get_content_type()):
@@ -141,14 +147,17 @@ def incoming(request):
     
     if '<' in fr and '>' in fr:
         fr = re.sub(r'^[^<]*<([^>]+)>.*$', r'\1', fr)
-    contact = models.Contact.all().filter('email', fr).get()
+    user = users.User.all().filter('is_active', True).filter('email', fr).get()
     
-    if not contact:
-        raise Exception("no contact for incoming mail from '%s'" % fr)
+    if not user:
+        raise Exception("no user for incoming mail from '%s'" % fr)
     
     team = None
-    for t in contact.teams:
-        if t in to:
+    for t in user.teams:
+        t = users.Team.get(t)
+        if not t or not t.is_active:
+            continue
+        if t.name in to:
             team = t
             break
     
@@ -165,59 +174,27 @@ def incoming(request):
     if quotation_position > -1:
         body = body[:quotation_position]
 
-    models.Report(contact=contact, body=body).put()
+    models.Report(user=user, team=team, body=body).put()
     return HttpResponse()
 
 
 def create_admin_user(request):
-    user = auth_models.User.get_by_key_name('admin')
+    user = users.User.get_by_key_name('admin')
     if not user or user.username != 'admin' or not (user.is_active and
             user.is_staff and user.is_superuser and
             user.check_password('admin')):
-        user = auth_models.User(key_name='admin', username='admin',
-            email='admin@localhost', first_name='Boss', last_name='Admin',
+        user = users.User(key_name='admin', email='admin@localhost.org', name='Boss Admin',
             is_active=True, is_staff=True, is_superuser=True)
         user.set_password('adminno')
         user.put()
     return HttpResponse()
 
-@staff_only
-def team_admin_dashboard(request):
-    # TODO: embed add form into each contact 
-    if request.method == 'POST':
-        if 'create_contact' in request.POST:
-            formCreate = forms.TeamAdminAddContact(request.POST)
-            formAdd = forms.TeamAdminContactListEntry()
-            if formCreate.is_valid():
-                cleaned_data = formCreate.cleaned_data
-                models.Contact(name=cleaned_data['name'], email=cleaned_data['email'])
-                return HttpResponseRedirect(request.get_full_path())
-        elif 'add_contact' in request.POST:
-            formAdd = forms.TeamAdminContactListEntry(request.POST)
-            formCreate = forms.TeamAdminAddContact()
-            if formAdd.is_valid():
-                cleaned_data = formCreate.cleaned_data
-                # TODO: add code 
-                return HttpResponseRedirect(request.get_full_path())
-        else:
-            return HttpResponseRedirect(request.get_full_path())
-    else:
-        formCreate = forms.TeamAdminAddContact()
-        formAdd = forms.TeamAdminContactListEntry()
-
-    return render_to_response('team_admin_dashboard', {
-        'formAdd': formAdd,
-        'formCreate': formCreate,
-    })
-
-
-def _embed_application_admin_contact_list_forms(contacts, request=None):
-    for contact in contacts:
+def _embed_application_admin_user_list_forms(users, request=None):
+    for user in users:
         if request:
-            contact.form = forms.AppAdminContactListEntry(request.POST, prefix=unicode(contact.key()), auto_id=False) 
+            user.form = forms.AppAdminUserListEntry(request.POST, prefix=unicode(user.key()), auto_id=False) 
         else:
-            contact.form = forms.AppAdminContactListEntry(prefix=unicode(contact.key()), auto_id=False)
-        contact.form.fields['teams'] = forms.ContactTeamsField(contact=contact)
+            user.form = forms.AppAdminUserListEntry(prefix=unicode(user.key()), auto_id=False)
 
 
 def _embed_application_admin_team_list_forms(teams, request=None):
@@ -228,44 +205,44 @@ def _embed_application_admin_team_list_forms(teams, request=None):
             team.form = forms.AppAdminTeamListEntry(prefix=unicode(team.key()), auto_id=False) 
 
 
-def update_team_set(contact, teams):
-    was = set(contact.teams)
+def update_team_set(user, teams):
+    was = set(user.teams)
     _is = set(teams)
     if was != _is:
-        contact.teams = _is
-        contact.put()
+        user.teams = _is
+        user.put()
 
 
 @staff_only
 def app_admin_dashboard(request):
     if not request.user.is_superuser:
         return HttpResponseForbidden()
-    contacts = models.Contact.all().filter("is_active", True).order("name").fetch(models.ALL)
-    teams = models.Team.all().filter("is_active", True).order("name").fetch(models.ALL)
+    _users = users.User.all().filter("is_active", True).order("name").fetch(models.ALL)
+    teams = users.Team.all().filter("is_active", True).order("name").fetch(models.ALL)
     for team in teams:
-        team.contacts = utils.get_contacts(team)    
+        team.users = utils.get_users(team)    
 
     formAddTeam = None
-    formAddContact = None
+    formAddUser = None
     
     action = None
     if request.method == 'POST' and 'action' in request.POST:
         action = request.POST['action']
+
+    add_user_to_team = None
+    if request.method == 'POST' and 'add_user_to_team' in request.POST:
+        add_user_to_team = request.POST['add_user_to_team']
     
-    add_contact_to_team = None
-    if request.method == 'POST' and 'add_contact_to_team' in request.POST:
-        add_contact_to_team = request.POST['add_contact_to_team']
-    
-    if add_contact_to_team:
-        num = add_contact_to_team.split('_')[1]
+    if add_user_to_team:
+        num = add_user_to_team.split('_')[1]
         num = int(num)
         team = teams[num]
-        email = request.POST[add_contact_to_team]
+        email = request.POST[add_user_to_team]
         email = re.sub(r'^[^<]*<([^>]+)>.*$', r'\1', email)
-        contact = models.Contact.all().filter("email", email).get()
-        if contact:
-            contact.teams.append(team.key())
-            contact.put()
+        user = users.User.all().filter("email", email).filter("is_active", True).get()
+        if user:
+            user.teams.append(team.key())
+            user.put()
                     
         return HttpResponseRedirect(request.get_full_path())
 
@@ -274,7 +251,7 @@ def app_admin_dashboard(request):
         
         if formAddTeam.is_valid():
             cleaned_data = formAddTeam.cleaned_data
-            models.Team(name=cleaned_data['name']).put()
+            users.Team(name=cleaned_data['name']).put()
             return HttpResponseRedirect(request.get_full_path())
 
     elif 'inactivate_teams' == action:
@@ -294,73 +271,83 @@ def app_admin_dashboard(request):
                     team.put()
             return HttpResponseRedirect(request.get_full_path())
         
-    elif 'add_contact' == action:
-        formAddContact = forms.AppAdminAddContact(request.POST)
+    elif 'add_user' == action:
+        formAddUser = forms.AppAdminAddUser(request.POST)
         
-        if formAddContact.is_valid():
-            cleaned_data = formAddContact.cleaned_data
+        if formAddUser.is_valid():
+            cleaned_data = formAddUser.cleaned_data
+
+            email = cleaned_data['email']
+            user = users.User.objects.create_user(email, email)
             
-            teams = models.Team.get(cleaned_data['teams'])
+            teams = users.Team.get(cleaned_data['teams'])
             if teams:
                 teams = filter(lambda x: x, teams)
                 teams = map(lambda x: x.key(), teams)
-            contact = models.Contact(name=cleaned_data['name'], email=cleaned_data['email'])
+            
             if teams:
-                contact.teams = teams
-            contact.put()
+                user.teams = teams
+                
+            name = cleaned_data['name']
+            if name:
+                user.name = name
+
+            user.put()
+            from registration.utils import password_reset
+            password_reset(request, user, creation=True)
             return HttpResponseRedirect(request.get_full_path())
         
-    elif 'assign_teams_to_contacts' == action:
-        _embed_application_admin_contact_list_forms(contacts, request)
+    elif 'assign_teams_to_users' == action:
+        _embed_application_admin_user_list_forms(_users, request)
         
         valid = True
-        for contact in contacts:
-            if not contact.form.is_valid():
+        for user in _users:
+            if not user.form.is_valid():
                 valid = False
                 continue
-            cleaned_data = contact.form.cleaned_data
-            update_team_set(contact, cleaned_data['teams'])
+            cleaned_data = user.form.cleaned_data
+            update_team_set(user, cleaned_data['teams'])
             
         if valid:
             return HttpResponseRedirect(request.get_full_path())
         
-    elif 'inactivate_contacts' == action:
-        _embed_application_admin_contact_list_forms(contacts, request)
+    elif 'inactivate_users' == action:
+        _embed_application_admin_user_list_forms(_users, request)
 
         valid = True
-        for contact in contacts:
-            if not contact.form.is_valid():
+        for user in _users:
+            if not user.form.is_valid():
                 valid = False
                 continue
             
         if valid:
-            for contact in contacts:
-                cleaned_data = contact.form.cleaned_data
+            for user in _users:
+                cleaned_data = user.form.cleaned_data
                 if cleaned_data['flag'] == u'on':
-                    contact.is_active = False
-                    contact.put()
+                    user.is_active = False
+                    user.put()
             return HttpResponseRedirect(request.get_full_path())
             
 
     if not formAddTeam:
         formAddTeam = forms.AppAdminAddTeam()
 
-    if not formAddContact:
-        formAddContact = forms.AppAdminAddContact()
+    if not formAddUser:
+        formAddUser = forms.AppAdminAddUser()
         
     if teams and not 'form' in dir(teams[0]):
         _embed_application_admin_team_list_forms(teams)
         
-    if contacts and not 'form' in dir(contacts[0]):
-        _embed_application_admin_contact_list_forms(contacts)
+    if _users and not 'form' in dir(_users[0]):
+        _embed_application_admin_user_list_forms(_users)
 
     return render_to_response(request,
                               'teammail/app_admin_dashboard.html',
                               data={
         'formAddTeam': formAddTeam,
-        'formAddContact': formAddContact,
+        'formAddUser': formAddUser,
         'teams': teams,
-        'contacts': contacts,
+        'users': _users,
     })
     
     

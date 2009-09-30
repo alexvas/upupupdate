@@ -39,16 +39,16 @@ def _send_team_mail(team, to, subject, html, text, cc=None):
 
 
 def send_team_personal_mail(request, subject, team, html_template, text_template, html_data, text_data):
-    for contact in utils.get_contacts(team):
-        html_data['contact'] = contact
-        text_data['contact'] = contact
+    for user in utils.get_users(team):
+        html_data['user'] = user
+        text_data['user'] = user
         html = render_to_string(request, html_template, html_data)
         text = render_to_string(request, text_template, text_data)
-        _send_team_mail(team, contact.email, subject, html, text)
+        _send_team_mail(team, user.email, subject, html, text)
 
 
 def send_team_common_mail(subject, team, html, text):
-    emails = map(lambda x: x.email, utils.get_contacts(team))
+    emails = map(lambda x: x.email, utils.get_users(team))
     emails = filter(lambda x: x, emails)
     if not emails:
         return
@@ -77,7 +77,7 @@ def invitation(request, team):
                             )
 
 
-def summary(request, team):
+def digest(request, team):
     now = dating.getLocalTime()
     some_noon = now.replace(hour=0, minute=0, second=0, microsecond=0)
     if some_noon + HALF_A_DAY > now:
@@ -85,17 +85,17 @@ def summary(request, team):
     else:
         start_of_report_day = some_noon
     
-    contacts = utils.get_contacts(team)
+    users = utils.get_users(team)
     absents = []
     reporters = []
     
-    for contact in contacts:
-        reports = contact.report_set.filter('added_date >', start_of_report_day).fetch(models.ALL)
+    for user in users:
+        reports = user.report_set.filter('added_date >', start_of_report_day).filter('team', team).fetch(models.ALL)
         if reports:
-            contact.message = reports[-1].body
-            reporters.append(contact)
+            user.message = reports[-1].body
+            reporters.append(user)
         else:
-            absents.append(contact)
+            absents.append(user)
     
     data = {
                  'homepage':request.build_absolute_uri("/"),

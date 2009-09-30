@@ -6,16 +6,16 @@
 	<div id="middle_left" class="span-9 colborder">
 		<h2>Teams</h2>
 		{% for team in teams %}
-			<h3><a href="/admin/teammail/team/{{ team.key }}">{{ team.name }}</a></h3>
+			<h3><a href="/admin/teammates/team/{{ team.key }}">{{ team.name }}</a></h3>
 			team members:
 		    <ul>
-			{% for contact in team.contacts %}
-				<li>{{ contact }}</li>
+			{% for user in team.users %}
+				<li>{{ user }}</li>
 	    	{% endfor %}
 		    </ul>
 	  		<form action="" method="post">
 			<input type="text" id="team_{{ forloop.counter0 }}" name="team_{{ forloop.counter0 }}" autocomplete="off" />
-	    	<button type="submit" name="add_contact_to_team" value="team_{{ forloop.counter0 }}">Add</button>
+	    	<button type="submit" name="add_user_to_team" value="team_{{ forloop.counter0 }}">Add</button>
 	  		</form>
     		<hr/>
 		{% endfor %}
@@ -31,21 +31,21 @@
 	</div>
 
 	<div id="middle_right" class="span-9 last">
-		<h2>Contacts</h2>
+		<h2>Users</h2>
     	<ul>
-		{% for contact in contacts %}
-			<li><a href="/admin/teammail/contact/{{ contact.key }}">{{ contact }}</a></li>
+		{% for user in users %}
+			<li><a href="/admin/teammates/user/{{ user.key }}">{{ user }}</a></li>
     	{% endfor %}
     	</ul>
     	<hr/>
-		<h3><em>New</em> contact</h3>
+		<h3><em>New</em> user</h3>
   		<form action="" method="post" class="dashboard">
-		{{ formAddContact.non_field_errors }}
-		{% for field in formAddContact %}
+		{{ formAddUser.non_field_errors }}
+		{% for field in formAddUser %}
 			{{ field.errors }}
 			{{ field.label_tag }}{{ field }}<br />
 		{% endfor %}
-    	<button type="submit" name="action" value="add_contact">Add</button>
+    	<button type="submit" name="action" value="add_user">Add</button>
 		</form>
 	</div>	
 {% endblock %}
@@ -64,16 +64,16 @@ var teams = [
 
 {% for team in teams %}
 var team_{{ forloop.counter0 }} = [
-	{% for contact in team.contacts %}{% if forloop.first %}{% else %}, {% endif %}"{{ contact.email }}"{% endfor %}
+	{% for user in team.users %}{% if forloop.first %}{% else %}, {% endif %}"{{ user.email }}"{% endfor %}
 ];
 {% endfor %}
 
-var contact_keys = [
-	{% for contact in contacts %}{% if forloop.first %}{% else %}, {% endif %}"{{ contact.email }}"{% endfor %}
+var user_keys = [
+	{% for user in users %}{% if forloop.first %}{% else %}, {% endif %}"{{ user.email }}"{% endfor %}
 ];
 
-var contact_values = [
-	{% for contact in contacts %}{% if forloop.first %}{% else %}, {% endif %}"{{ contact|safe }}"{% endfor %}
+var user_values = [
+	{% for user in users %}{% if forloop.first %}{% else %}, {% endif %}"{{ user|safe }}"{% endfor %}
 ];
 {% endblock gwt_js_data %}
 </script>

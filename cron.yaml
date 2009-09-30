@@ -4,7 +4,7 @@ cron:
   schedule: every day 12:00
   timezone: US/Central  
 - description: summary (Update Team)
-  url: /cron/summary
+  url: /cron/digest
   schedule: every day 23:59
   timezone: US/Central
   

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django import forms
 from teammail import models, utils
-
+from teammates import users
 
 class UniqueField(forms.CharField):
     def clean(self, value):
@@ -13,10 +13,12 @@ class UniqueField(forms.CharField):
         pass
 
 
-class UniqueContactEmailField(UniqueField):
+class UniqueUserEmailField(UniqueField):
     default_error_messages = {
         'already_registered_for': u"The '%s' is already registered for the user '%s'.",
         'already_registered': u"The '%s' is already registered.",
+        'already_registered_for_inactive': u"The '%s' is already registered for the inactive user '%s'.",
+        'already_registered_inactive': u"The '%s' is already registered for the inactive user.",
     }
 
     def __init__(self, *args, **kw):
@@ -25,13 +27,19 @@ class UniqueContactEmailField(UniqueField):
         kw['max_length'] = 30
         kw['error_messages'] = {'required': u'Please provide an email.'}
         
-        super(UniqueContactEmailField, self).__init__(*args, **kw)
+        super(UniqueUserEmailField, self).__init__(*args, **kw)
 
     def check_uniqueness(self, value):
-        same_contact = models.Contact.all().filter("email", value).get()
-        if same_contact:
-            if same_contact.name:
-                raise forms.ValidationError(self.error_messages['already_registered_for'] % (value, same_contact.name))
+        same_user = users.User.all().filter('email', value).get()
+        if same_user:
+            if not same_user.is_active:
+                if same_user.name:
+                    raise forms.ValidationError(self.error_messages['already_registered_for_inactive'] % (value, same_user.name))
+                else:
+                    raise forms.ValidationError(self.error_messages['already_registered_inactive'] % value)            
+            
+            if same_user.name:
+                raise forms.ValidationError(self.error_messages['already_registered_for'] % (value, same_user.name))
             else:
                 raise forms.ValidationError(self.error_messages['already_registered'] % value)
 
@@ -50,20 +58,19 @@ class UniqueTeamNameField(UniqueField):
         super(UniqueTeamNameField, self).__init__(*args, **kw)
 
     def check_uniqueness(self, value):
-        same_contact = models.Team.all().filter("name", value).get()
-        if same_contact:
+        same_team = users.Team.all().filter("name", value).get()
+        if same_team:
                 raise forms.ValidationError(self.error_messages['already_exists'] % value)
 
 
-
-class ContactTeamsField(forms.MultipleChoiceField):
-    def __init__(self, contact=None, *args, **kw):
+class UserTeamsField(forms.MultipleChoiceField):
+    def __init__(self, user=None, *args, **kw):
         kw['required'] = False
         kw['choices'] = utils.get_team_choices()
-        if contact:
-            kw['initial'] = contact.teams
+        if user:
+            kw['initial'] = user.teams
         
-        super(ContactTeamsField, self).__init__(*args, **kw)
+        super(UserTeamsField, self).__init__(*args, **kw)
 
     def widget_attrs(self, widget):
         return {'size': 5}
@@ -76,17 +83,7 @@ class UserVisible(forms.ModelForm):
 
 class Team(forms.ModelForm):    
     class Meta(UserVisible.Meta):
-        model = models.Team
-
-
-class Division(forms.ModelForm):
-    class Meta(UserVisible.Meta):
-        model = models.Division
-
-
-class Contact(forms.ModelForm):
-    class Meta(UserVisible.Meta):
-        model = models.Contact
+        model = users.Team
 
 
 class Report(forms.ModelForm):
@@ -100,24 +97,24 @@ class Template(forms.ModelForm):
 
 
 
-class TeamAdminAddContact(forms.Form):
+class TeamAdminAddUser(forms.Form):
     name = forms.CharField(required=False)
-    email = UniqueContactEmailField()
+    email = UniqueUserEmailField()
 
 
-class TeamAdminContactListEntry(forms.Form):
+class TeamAdminUserListEntry(forms.Form):
     in_team = forms.BooleanField(required=False)
 
 
-class AppAdminAddContact(forms.Form):
+class AppAdminAddUser(forms.Form):
     name = forms.CharField(required=False)
-    email = UniqueContactEmailField()
-    teams = ContactTeamsField()
+    email = UniqueUserEmailField()
 
     def __init__(self, *args, **kw):
-        kw['prefix'] = 'app_admin_add_contact'
+        kw['prefix'] = 'app_admin_add_user'
         
-        super(AppAdminAddContact, self).__init__(*args, **kw)
+        super(AppAdminAddUser, self).__init__(*args, **kw)
+        self.fields['teams'] = UserTeamsField()
 
 
 
@@ -131,13 +128,13 @@ class AppAdminAddTeam(forms.Form):
 
 
 
-class AppAdminContactListEntry(forms.Form):
+class AppAdminUserListEntry(forms.Form):
     flag = forms.BooleanField(required=False)
 
 
-class AppAdminChangeContact(forms.Form):
+class AppAdminChangeUser(forms.Form):
     name = forms.CharField(required=False)
-    email = UniqueContactEmailField()
+    email = UniqueUserEmailField()
     inactivate = forms.BooleanField(required=False)
 
 

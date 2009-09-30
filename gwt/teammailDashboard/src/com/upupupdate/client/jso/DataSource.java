@@ -9,23 +9,23 @@ import java.util.Set;
 public enum DataSource {
     INSTANCE;
     
-    private Map<String, String> contacts = null;
+    private Map<String, String> users = null;
 
     private Map<String, Set<String>> teams = null;
 
-    public Map<String, String> getContacts() {
-        if (contacts != null) {
-            return contacts;
+    public Map<String, String> getUsers() {
+        if (users != null) {
+            return users;
         }
-        contacts = new LinkedHashMap<String, String>();
-        EmbeddedArray keys = getEmbeddedArray("contact_keys");
-        EmbeddedArray values = getEmbeddedArray("contact_values");
+        users = new LinkedHashMap<String, String>();
+        EmbeddedArray keys = getEmbeddedArray("user_keys");
+        EmbeddedArray values = getEmbeddedArray("user_values");
 
         for (int i = 0, n = keys.length(); i < n; ++i) {
-            contacts.put(keys.get(i), values.get(i));
+            users.put(keys.get(i), values.get(i));
         }
 
-        return contacts;
+        return users;
     }
 
     public Map<String, Set<String>> getTeams() {
@@ -41,9 +41,9 @@ public enum DataSource {
             Set<String> members = new HashSet<String>();
             for (int j = 0, m = teamContactKeys.length(); j < m; ++j) {
                 String teamContactKey = teamContactKeys.get(j);
-                members.add(getContacts().get(teamContactKey));
+                members.add(getUsers().get(teamContactKey));
             }
-            Set<String> complement = new LinkedHashSet<String>(getContacts().values());
+            Set<String> complement = new LinkedHashSet<String>(getUsers().values());
             complement.removeAll(members);
             teams.put(name, complement);
         }

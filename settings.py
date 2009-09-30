@@ -72,9 +72,9 @@ MIDDLEWARE_CLASSES = (
 # Google authentication
 #AUTH_USER_MODULE = 'alladmins.models'
 #AUTH_USER_MODULE = 'ragendja.auth.google_models'
-AUTH_ADMIN_MODULE = 'ragendja.auth.google_admin'
+#AUTH_ADMIN_MODULE = 'ragendja.auth.google_admin'
 # Hybrid Django/Google authentication
-AUTH_USER_MODULE = 'ragendja.auth.hybrid_models'
+AUTH_USER_MODULE = 'teammates.users'
 
 LOGIN_REQUIRED_PREFIXES = (
     '/admin/',
@@ -108,6 +108,7 @@ IGNORE_APP_SETTINGS = IGNORE_APP_URLSAUTO = (
     # 'django.contrib.admin',
     # 'django.contrib.auth',
     # 'yetanotherapp',
+    # 'registration'
 )
 
 # Remote access to production server (e.g., via manage.py shell --remote)

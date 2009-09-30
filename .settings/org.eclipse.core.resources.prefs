@@ -1,8 +1,9 @@
-#Tue Sep 15 18:50:16 NOVST 2009
+#Fri Sep 25 18:14:41 NOVST 2009
 eclipse.preferences.version=1
 encoding//alladmins/models.py=utf-8
 encoding//common/appenginepatch/appenginepatcher/patch.py=utf-8
 encoding//common/appenginepatch/appenginepatcher/tests.py=utf-8
+encoding//common/appenginepatch/ragendja/auth/urls.py=utf-8
 encoding//common/appenginepatch/ragendja/auth/views.py=utf-8
 encoding//common/appenginepatch/ragendja/dbutils.py=utf-8
 encoding//common/appenginepatch/ragendja/settings_pre.py=utf-8
