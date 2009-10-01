@@ -3,7 +3,7 @@ from google.appengine.api import mail as ae_mail
 from ragendja.template import render_to_string
 from teammail import models, dating, utils
 
-FROM_ADDRESS = 'Up up update! <rakesh.agrawal@gmail.com>'
+FROM_ADDRESS = 'Up up update! <update@upupupdate.com>'
 REPLY_ADDRESS = 'incoming@smtp2web.com'
 
 MIME_IMAGES = ('image/x-ms-bmp', 'image/gif', 'image/jpeg', 'image/png', 'image/tiff')
