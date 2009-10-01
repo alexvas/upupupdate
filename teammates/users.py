@@ -30,6 +30,8 @@ class User(DjangoUser):
     def first_name(self):
         if not self.name:
             return ''
+        if not ' ' in self.name:
+            return self.name
         (first, last) = self.name.rsplit(None, 1)
         if first:
             return first
@@ -38,6 +40,8 @@ class User(DjangoUser):
     @property
     def last_name(self):
         if not self.name:
+            return ''
+        if not ' ' in self.name:
             return ''
         (first, last) = self.name.rsplit(None, 1)
         if last:
