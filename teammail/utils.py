@@ -21,3 +21,7 @@ def get_team_choices():
 
 def get_users(team):
     return users.User.all().filter("is_active", True).filter('teams', team).order("name").fetch(models.ALL)    
+
+
+def get_all_users(team):
+    return users.User.all().filter('teams', team).order("name").fetch(models.ALL)    

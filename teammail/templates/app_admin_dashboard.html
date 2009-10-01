@@ -1,11 +1,14 @@
 {% extends 'teammail/base.html' %}
 
 {% block content %}
-	<h1>Dashboard</h1>
+	<h1>{% firstof title 'Dashboard' %}</h1>
 	
 	<div id="middle_left" class="span-9 colborder">
 		<h2>Teams</h2>
 		{% for team in teams %}
+			{% if forloop.counter0 %}
+    			<hr/>
+			{% endif %}
 			<h3><a href="{% url teammail.views.app_admin_dashboard_team_edit key=team.key %}">{{ team.name }}</a></h3>
 			team members:
 		    <ul>
@@ -13,25 +16,29 @@
 				<li>{{ user }}</li>
 	    	{% endfor %}
 		    </ul>
-	  		<form action="" method="post">
-			{{ team.assign_form.non_field_errors }}
-			{% for f in team.assign_form %}
+		    {% if team.assign_form %}
+		  		<form action="" method="post">
+				{{ team.assign_form.non_field_errors }}
+				{% for f in team.assign_form %}
+					{{ f.errors }}
+					{{ f }}
+				{% endfor %}
+		    	<button type="submit" name="add_user_to_team" value="team_{{ forloop.counter0 }}">Add</button>
+	  			</form>
+	  		{% endif %}
+		{% endfor %}
+		{% if formAddTeam %}
+    		<hr/>
+    		<h3><em>New</em> Team</h3>
+  			<form action="" method="post">
+			{{ formAddTeam.non_field_errors }}
+			{% for f in formAddTeam %}
 				{{ f.errors }}
 				{{ f }}
 			{% endfor %}
-	    	<button type="submit" name="add_user_to_team" value="team_{{ forloop.counter0 }}">Add</button>
-	  		</form>
-    		<hr/>
-		{% endfor %}
-    	<h3><em>New</em> Team</h3>
-  		<form action="" method="post">
-		{{ formAddTeam.non_field_errors }}
-		{% for f in formAddTeam %}
-			{{ f.errors }}
-			{{ f }}
-		{% endfor %}
-    	<button type="submit" name="action" value="add_team">Add</button>
-  		</form>
+    		<button type="submit" name="action" value="add_team">Add</button>
+  			</form>
+		{% endif %}
 	</div>
 
 	<div id="middle_right" class="span-9 last">
@@ -41,16 +48,18 @@
 			<li><a href="{% url teammail.views.app_admin_dashboard_user_edit key=user.key %}">{{ user }}</a></li>
     	{% endfor %}
     	</ul>
-    	<hr/>
-		<h3><em>New</em> user</h3>
-  		<form action="" method="post" class="dashboard">
-		{{ formAddUser.non_field_errors }}
-		{% for field in formAddUser %}
-			{{ field.errors }}
-			{{ field.label_tag }}{{ field }}<br />
-		{% endfor %}
-    	<button type="submit" name="action" value="add_user">Add</button>
-		</form>
+		{% if formAddUser %}
+	    	<hr/>
+			<h3><em>New</em> user</h3>
+  			<form action="" method="post" class="dashboard">
+			{{ formAddUser.non_field_errors }}
+			{% for field in formAddUser %}
+				{{ field.errors }}
+				{{ field.label_tag }}{{ field }}<br />
+			{% endfor %}
+    		<button type="submit" name="action" value="add_user">Add</button>
+			</form>
+		{% endif %}
 	</div>	
 {% endblock %}
 
@@ -85,3 +94,11 @@ var user_values = [
 <script src="/gwt/teammailDashboard/nocache.js"></script>
 {% endblock gwt_module %}
 {% endblock bottom_js %}
+
+
+{% block sidebar %}
+<div class="box" id="subtoolbox">
+    <h4><a href="{% url teammail.views.app_admin_dashboard_stasis %}">stasisboard</a></h4>
+</div>
+{% endblock sidebar %}
+      

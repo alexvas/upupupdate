@@ -14,4 +14,5 @@ rootpatterns = patterns('teammail.views',
     (r'^dashboard/$', 'app_admin_dashboard'),
     (r'^dashboard/user/(?P<key>\w+)/$', 'app_admin_dashboard_user_edit'),
     (r'^dashboard/team/(?P<key>\w+)/$', 'app_admin_dashboard_team_edit'),
+    (r'^dashboard/stasis/$', 'app_admin_dashboard_stasis'),
 )

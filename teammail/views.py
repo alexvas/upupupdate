@@ -385,3 +385,17 @@ def app_admin_dashboard_user_edit(request, key):
 
 def app_admin_dashboard_team_edit(request, key):
     return change_entity(request, key, forms.Team)
+
+def app_admin_dashboard_stasis(request):
+    _users = users.User.all().filter("is_active", False).order("name").fetch(models.ALL)
+    teams = users.Team.all().filter("is_active", False).order("name").fetch(models.ALL)
+    for team in teams:
+        team.users = utils.get_all_users(team)    
+    
+    return render_to_response(request,
+                              'teammail/app_admin_dashboard.html',
+                              data={
+        'title': 'Stasisboard',
+        'teams': teams,
+        'users': _users,
+    })
