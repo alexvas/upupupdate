@@ -10,8 +10,17 @@ class UniqueField(forms.CharField):
         self.check_uniqueness(value)
         return super(UniqueField, self).clean(value)
 
-    def check_uniqueness(self, value):
+    @classmethod
+    def check_uniqueness(cls, value):
         pass
+
+    def __init__(self, *args, **kw):
+        kw['help_text'] = u'unique email address'
+        kw['min_length'] = 9
+        kw['max_length'] = 30
+        kw['error_messages'] = {'required': u'Please provide an email.'}
+        
+        super(UniqueField, self).__init__(*args, **kw)
 
 
 class UniqueUserEmailField(UniqueField):
@@ -30,19 +39,25 @@ class UniqueUserEmailField(UniqueField):
         
         super(UniqueUserEmailField, self).__init__(*args, **kw)
 
-    def check_uniqueness(self, value):
+    @classmethod
+    def bail(cls, same_user, value):
+        if not same_user.is_active:
+            if same_user.name:
+                raise forms.ValidationError(cls.default_error_messages['already_registered_for_inactive'] % (value, same_user.name))
+            else:
+                raise forms.ValidationError(cls.default_error_messages['already_registered_inactive'] % value)            
+        
+        if same_user.name:
+            raise forms.ValidationError(cls.default_error_messages['already_registered_for'] % (value, same_user.name))
+        else:
+            raise forms.ValidationError(cls.default_error_messages['already_registered'] % value)
+
+
+    @classmethod
+    def check_uniqueness(cls, value):
         same_user = users.User.all().filter('email', value).get()
         if same_user:
-            if not same_user.is_active:
-                if same_user.name:
-                    raise forms.ValidationError(self.error_messages['already_registered_for_inactive'] % (value, same_user.name))
-                else:
-                    raise forms.ValidationError(self.error_messages['already_registered_inactive'] % value)            
-            
-            if same_user.name:
-                raise forms.ValidationError(self.error_messages['already_registered_for'] % (value, same_user.name))
-            else:
-                raise forms.ValidationError(self.error_messages['already_registered'] % value)
+            cls.bail(same_user, value)
 
 
 class UniqueTeamNameField(UniqueField):
@@ -58,10 +73,15 @@ class UniqueTeamNameField(UniqueField):
         
         super(UniqueTeamNameField, self).__init__(*args, **kw)
 
-    def check_uniqueness(self, value):
+    @classmethod
+    def bail(cls, value):
+        raise forms.ValidationError(cls.default_error_messages['already_exists'] % value)
+
+    @classmethod
+    def check_uniqueness(cls, value):
         same_team = users.Team.all().filter("name", value).get()
         if same_team:
-                raise forms.ValidationError(self.error_messages['already_exists'] % value)
+                cls.bail(value)
 
 
 class UserTeamsField(forms.MultipleChoiceField):
@@ -83,8 +103,34 @@ class UserVisible(forms.ModelForm):
 
 
 class Team(forms.ModelForm):    
+    name = forms.CharField()
+
+    def clean_name(self):
+        data = self.cleaned_data['name']
+        original = self.instance.name
+        if original == data:
+            return data
+        UniqueTeamNameField.check_uniqueness(data)
+        return data
+    
     class Meta(UserVisible.Meta):
         model = users.Team
+
+
+class User(forms.ModelForm):    
+    email = forms.EmailField()
+
+    def clean_email(self):
+        data = self.cleaned_data['email']
+        original = self.instance.email
+        if original == data:
+            return data
+        UniqueUserEmailField.check_uniqueness(data)
+        return data
+
+    class Meta(UserVisible.Meta):
+        model = users.User
+        fields = ('is_active', 'name', 'email', 'teams')
 
 
 class Report(forms.ModelForm):
@@ -181,18 +227,5 @@ class AppAdminUserListEntry(forms.Form):
     flag = forms.BooleanField(required=False)
 
 
-class AppAdminChangeUser(forms.Form):
-    name = forms.CharField(required=False)
-    email = UniqueUserEmailField()
-    inactivate = forms.BooleanField(required=False)
-
-
 class AppAdminTeamListEntry(forms.Form):
     flag = forms.BooleanField(required=False)
-
-
-class AppAdminChangeTeam(forms.Form):
-    name = UniqueTeamNameField()
-    inactivate = forms.BooleanField(required=False)
-
-

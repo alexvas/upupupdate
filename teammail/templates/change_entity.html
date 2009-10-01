@@ -1,0 +1,13 @@
+{% extends 'teammail/base.html' %}
+
+{% block content %}
+<form action="" method="post" id="change_entity">
+	{{ form.non_field_errors }}
+	<table>
+	{% for field in form %}
+		<tr class="{% cycle 'row2' 'row1' %}"><th>{{ field.label_tag }}</th><td>{{ field.errors }}{{ field }}</td></tr>
+	{% endfor %}
+	</table>
+	<button type="submit" name="action" value="save">Save</button>
+</form>
+{% endblock %}

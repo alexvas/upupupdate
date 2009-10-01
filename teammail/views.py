@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
+import email, re
+
 from HTMLParser import HTMLParser
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, \
     HttpResponseForbidden
+
 from ragendja.auth.decorators import staff_only
 from ragendja.template import render_to_response
+from ragendja.dbutils import get_object_or_404
+
 from teammail import models, forms, mail, utils
 from teammates import users
-import email
-import re
-
 
 
 def main(request):
@@ -363,3 +365,23 @@ def fork(request):
         return HttpResponseRedirect('/dashboard/');
     else:
         return HttpResponseRedirect('/manage/teammail/');
+
+
+def change_entity(request, key, form_class):
+    instance = get_object_or_404(form_class.Meta.model, key) 
+    if request.method == 'POST':
+        form = form_class(request.POST, instance=instance)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(request.get_full_path())
+    else:
+        form = form_class(instance=instance)
+    return render_to_response(request, 'teammail/change_entity.html', data={ 'form': form, })
+
+
+def app_admin_dashboard_user_edit(request, key):
+    return change_entity(request, key, forms.User)
+
+
+def app_admin_dashboard_team_edit(request, key):
+    return change_entity(request, key, forms.Team)
