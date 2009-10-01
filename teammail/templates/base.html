@@ -54,14 +54,18 @@
             {% if user.is_staff %}
               <h4><a href="/dashboard/">dashboard</a></h4>
               <h4><a href="/admin/">other stuff</a></h4>
-            {% else %}
-              <h4><a href="/manage/teammail/">manage</a> data</h4>
             {% endif %}
             <h4><a href="{% url django.contrib.auth.views.logout %}">sign out</a></h4>
           {% else %}
             <h4><a href="{% url teammail.views.fork %}">sign in</a></h4>
           {% endif %}
       </div>
+      {% if user.is_authenticated %}
+          <div class="box" id="profilebox">
+              <h4><a href="{% url auth_password_change %}">change password</a></h4>
+          </div>
+      {% endif %}
+
       {% block sidebar %}{% endblock %}
     </div>
     <hr />

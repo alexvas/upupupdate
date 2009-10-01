@@ -364,7 +364,7 @@ def fork(request):
     if request.user.is_superuser:
         return HttpResponseRedirect('/dashboard/');
     else:
-        return HttpResponseRedirect('/manage/teammail/');
+        return HttpResponseRedirect('/');
 
 
 def change_entity(request, key, form_class):

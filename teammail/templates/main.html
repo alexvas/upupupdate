@@ -1,7 +1,10 @@
 {% extends 'teammail/base.html' %}
+{% load teammail_base %}
 
 {% block content %}
   {% if user.is_authenticated %}
+  <h1>Recent Reports</h1>
+  {% user_reports user %}
   &nbsp;
 {% else %}
     Please, <a href="{% url teammail.views.fork %}">sign in</a>.

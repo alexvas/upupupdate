@@ -45,6 +45,12 @@ indexes:
   - name: user
   - name: added_date
 
+- kind: teammail_report
+  properties:
+  - name: user
+  - name: added_date
+    direction: desc
+
 - kind: teammates_user
   properties:
   - name: teams
@@ -78,4 +84,3 @@ indexes:
   properties:
   - name: is_active
   - name: name
-
