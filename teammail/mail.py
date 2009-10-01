@@ -1,4 +1,4 @@
-import re, copy, datetime
+import re, copy, datetime, logging
 from google.appengine.api import mail as ae_mail
 from ragendja.template import render_to_string
 from teammail import models, dating, utils
@@ -58,6 +58,17 @@ def send_team_common_mail(subject, team, html, text):
     _send_team_mail(team, to, subject, html, text, cc=', '.join(emails))
 
 
+def _get_report_day():
+    now = dating.getLocalTime()
+    logging.debug("Now is %s", now.strftime("%A, %m/%d/%Y at %H:%M"))
+    some_noon = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    if some_noon + HALF_A_DAY > now:
+        start_of_report_day = some_noon - 2 * HALF_A_DAY
+    else:
+        start_of_report_day = some_noon
+    return start_of_report_day
+
+
 def invitation(request, team):
     html_data = {
                  'team': team,
@@ -68,7 +79,7 @@ def invitation(request, team):
     text_data['quotation'] = QUOTATION
     send_team_personal_mail(
                             request,
-                            'Update email',
+                            '%s - update request? (%s)' % (team.name, _get_report_day().strftime("%A, %m/%d/%Y")),
                             team,
                             'base_invitation_mail.html',
                             'base_invitation_mail.txt',
@@ -78,12 +89,7 @@ def invitation(request, team):
 
 
 def digest(request, team):
-    now = dating.getLocalTime()
-    some_noon = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    if some_noon + HALF_A_DAY > now:
-        start_of_report_day = some_noon - 2 * HALF_A_DAY
-    else:
-        start_of_report_day = some_noon
+    start_of_report_day = _get_report_day()
     
     users = utils.get_users(team)
     absents = []
@@ -104,4 +110,4 @@ def digest(request, team):
                  }
     html = render_to_string(request, 'base_summary_mail.html', data=data)
     text = render_to_string(request, 'base_summary_mail.txt', data=data)
-    send_team_common_mail('Team email', team, html, text)
+    send_team_common_mail('%s - daily digest (%s)' % (team.name, start_of_report_day.strftime("%A, %m/%d/%Y")), team, html, text)
