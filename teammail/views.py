@@ -2,6 +2,7 @@
 import email, re
 
 from HTMLParser import HTMLParser
+from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, \
     HttpResponseForbidden
@@ -373,7 +374,7 @@ def change_entity(request, key, form_class):
         form = form_class(request.POST, instance=instance)
         if form.is_valid():
             form.save()
-            return HttpResponseRedirect(request.get_full_path())
+            return HttpResponseRedirect(reverse("dashboard"))
     else:
         form = form_class(instance=instance)
     return render_to_response(request, 'teammail/change_entity.html', data={ 'form': form, })
