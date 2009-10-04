@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls.defaults import patterns, include
-from teammail import manage
+from django.conf.urls.defaults import patterns, include, url
+from teammail import manage, views as v
 
-rootpatterns = patterns('teammail.views',
-    (r'^$', 'main'),
-    (r'^cron/invitation$', 'invitation'),
-    (r'^cron/digest$', 'digest'),
-    (r'^incoming$', 'incoming'),
-    (r'^wizz_admin$', 'create_admin_user'),
-    (r'^smtp2web_d2577e1b08ca67b4.html$', 'empty'),
-    (r'^fork/', 'fork'),
-    (r'^manage/', include(manage.site.urls)),
-    (r'^dashboard/$', 'app_admin_dashboard'),
-    (r'^dashboard/user/(?P<key>\w+)/$', 'app_admin_dashboard_user_edit'),
-    (r'^dashboard/team/(?P<key>\w+)/$', 'app_admin_dashboard_team_edit'),
-    (r'^dashboard/stasis/$', 'app_admin_dashboard_stasis'),
+rootpatterns = patterns('',
+    url(r'^$', v.main),
+    url(r'^cron/invitation$', v.invitation),
+    url(r'^cron/digest$', v.digest),
+    url(r'^incoming$', v.incoming),
+    url(r'^wizz_admin$', v.create_admin_user),
+    url(r'^smtp2web_d2577e1b08ca67b4.html$', v.empty),
+    url(r'^fork/', v.fork),
+    url(r'^manage/', include(manage.site.urls)),
+    url(r'^dashboard/$', v.app_admin_dashboard, name='dashboard'),
+    url(r'^dashboard/user/(?P<key>\w+)/$', v.app_admin_dashboard_user_edit),
+    url(r'^dashboard/team/(?P<key>\w+)/$', v.app_admin_dashboard_team_edit),
+    url(r'^dashboard/stasis/$', v.app_admin_dashboard_stasis),
 )
