@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import email, re
+import email, re, logging
 
 from HTMLParser import HTMLParser
 from django.core.urlresolvers import reverse
@@ -106,6 +106,47 @@ class QuoteRemover(HTMLParser):
             self.out += data
 
 
+class PairTagCollector(HTMLParser):
+    
+    def __init__(self):
+        self.reset()        
+        self.opened = {}
+
+
+    def get_close_tags(self):
+        out = ''
+        for tag in self.opened:
+            out = ('</%s>' % tag) * self.opened[tag]        
+        return out
+
+
+    def handle_starttag(self, tag, attrs):
+        if not tag in self.opened:
+            self.opened[tag] = 1
+            return
+        self.opened[tag] = self.opened[tag] + 1
+
+        
+    def handle_startendtag(self, tag, attrs):
+        pass
+
+
+    def handle_endtag(self, tag):
+        if not tag in self.opened:
+            logging.error("no tag '%s' among open tags" % tag)
+            return
+        count = self.opened[tag]
+        if count < 1: 
+            logging.error("%d count for opened tag '%s'" % (count, tag))
+            return
+        self.opened[tag] = count - 1
+        
+
+    def handle_data(self, data):
+        pass
+
+
+
 def get_charset(message, default="ascii"):
     """Get the message charset"""
 
@@ -118,9 +159,15 @@ def get_charset(message, default="ascii"):
     return default
 
 
+WROTE_PATTERN = "%s wrote:$" % mail.FROM_ADDRESS
+__addr = re.search(r'<([^>]+)>', mail.FROM_ADDRESS)
+if __addr:
+    WROTE_HTML_PATTERN = r"<a\s+href='mailto:%s'>%s</a>\s+wrote:$" % (__addr.group(1), __addr.group(1)) 
+else:
+    WROTE_HTML_PATTERN = WROTE_PATTERN
+
 def incoming(request):
     message = email.message_from_string(request.raw_post_data);
-#    import logging
     
     plain = u''
     html = u''
@@ -169,9 +216,47 @@ def incoming(request):
         quote_remover.close()          
         body = quote_remover.out
 
-    quotation_position = body.find(mail.QUOTATION)
-    if quotation_position > -1:
-        body = body[:quotation_position]
+        quotation_position = body.find(mail.QUOTATION)
+        if quotation_position > -1:
+            body = body[:quotation_position]
+            
+        lines = re.split("(?:<br/?>|</div>\n?<div>)", body);
+        lines.reverse()
+        
+        index = 0;
+        for line in lines:
+            line = line.strip()
+            if not line or re.search(WROTE_HTML_PATTERN, line):
+                index = index + 1
+            else:
+                break
+        
+        lines = lines[index:]
+        lines.reverse()
+        body = "<br/>\n".join(lines)
+        pair_collector = PairTagCollector()
+        pair_collector.feed(body)
+        pair_collector.close()
+        body = body + pair_collector.get_close_tags()            
+    else:
+        quotation_position = plain.find(mail.QUOTATION)
+        if quotation_position > -1:
+            plain = plain[:quotation_position]
+        
+        lines = re.split("\n", plain);
+        lines.reverse()
+        
+        index = 0;
+        for line in lines:
+            line = line.strip()
+            if not line or re.search(r'^>(\s*>)*$', line) or re.search(WROTE_PATTERN, line):
+                index = index + 1
+            else:
+                break
+        
+        lines = lines[index:]
+        lines.reverse()
+        body = "<br/>\n".join(lines)
 
     models.Report(user=user, team=team, body=body).put()
     return HttpResponse()

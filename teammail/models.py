@@ -20,10 +20,14 @@ class Report(users.Logged):
     body = db.TextProperty(required=True)
 
     def __unicode__(self):
-        return "%s's report" % self.user
+        user = 'Deleted User'
+        try:
+            user = self.user
+        except:
+            pass
+        return "%s's report" % user
 
 
-        
 class Template(users.Logged):
     name = db.StringProperty(required=True)
     body = db.TextProperty(required=True)

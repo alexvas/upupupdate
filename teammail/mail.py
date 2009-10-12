@@ -23,14 +23,25 @@ def _get_scaled_name(name):
     return name + '.jpg'
 
 
-def _send_team_mail(team, to, subject, html, text, cc=None):
-    reply_to = "%s <%s>" % (team.name, REPLY_ADDRESS)
-    m = ae_mail.EmailMessage(
+def _send_team_mail(team, to, subject, html, text, cc=None, reply_to=None):
+    if reply_to is None:
+        reply_to = "%s <%s>" % (team.name, REPLY_ADDRESS)
+
+    if reply_to:        
+        m = ae_mail.EmailMessage(
                             sender=FROM_ADDRESS,
                             to=to,
                             subject=subject,
                             body=text,
                             reply_to=reply_to,
+                            html=html,
+                            )
+    else:
+        m = ae_mail.EmailMessage(
+                            sender=FROM_ADDRESS,
+                            to=to,
+                            subject=subject,
+                            body=text,
                             html=html,
                             )
     if cc:
@@ -55,7 +66,7 @@ def send_team_common_mail(subject, team, html, text):
     to = emails.pop()
     if not to:
         return
-    _send_team_mail(team, to, subject, html, text, cc=', '.join(emails))
+    _send_team_mail(team, to, subject, html, text, cc=', '.join(emails), reply_to=False)
 
 
 def _get_report_day():
