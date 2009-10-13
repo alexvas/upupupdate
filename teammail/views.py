@@ -188,7 +188,11 @@ def incoming(request):
     
     body = html or plain
     
-    if not (body and fr and to):
+    if not body:
+        # do nothing on empty email 
+        return HttpResponse()
+    
+    if not (fr and to):
         raise Exception("dummy message received: %s" % message)
     
     if '<' in fr and '>' in fr:
@@ -257,6 +261,10 @@ def incoming(request):
         lines = lines[index:]
         lines.reverse()
         body = "<br/>\n".join(lines)
+    
+    if not body:
+        # do nothing on empty email 
+        return HttpResponse()
 
     models.Report(user=user, team=team, body=body).put()
     return HttpResponse()
@@ -268,7 +276,7 @@ def create_admin_user(request):
             user.is_staff and user.is_superuser and
             user.check_password('admin')):
         user = users.User(key_name='admin', email='admin@localhost.org', name='Boss Admin',
-            is_active=True, is_staff=True, is_superuser=True)
+            is_active=True, is_staff=True, is_superuser=True, username='admin')
         user.set_password('adminno')
         user.put()
     return HttpResponse()

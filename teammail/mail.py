@@ -3,6 +3,7 @@ from google.appengine.api import mail as ae_mail
 from ragendja.template import render_to_string
 from teammail import models, dating, utils
 
+#FROM_ADDRESS = 'A.A.Vasiljev@gmail.com'
 FROM_ADDRESS = 'Up up update! <update@upupupdate.com>'
 REPLY_ADDRESS = 'incoming@smtp2web.com'
 
@@ -26,6 +27,8 @@ def _get_scaled_name(name):
 def _send_team_mail(team, to, subject, html, text, cc=None, reply_to=None):
     if reply_to is None:
         reply_to = "%s <%s>" % (team.name, REPLY_ADDRESS)
+
+    
 
     if reply_to:        
         m = ae_mail.EmailMessage(
@@ -58,7 +61,7 @@ def send_team_personal_mail(request, subject, team, html_template, text_template
         _send_team_mail(team, user.email, subject, html, text)
 
 
-def send_team_common_mail(subject, team, html, text):
+def send_team_common_mail(subject, team, html, text, reply_to=None):
     emails = map(lambda x: x.email, utils.get_users(team))
     emails = filter(lambda x: x, emails)
     if not emails:
@@ -66,7 +69,7 @@ def send_team_common_mail(subject, team, html, text):
     to = emails.pop()
     if not to:
         return
-    _send_team_mail(team, to, subject, html, text, cc=', '.join(emails), reply_to=False)
+    _send_team_mail(team, to, subject, html, text, cc=', '.join(emails), reply_to=reply_to)
 
 
 def _get_report_day():
@@ -88,14 +91,15 @@ def invitation(request, team):
                  }
     text_data = copy.copy(html_data)
     text_data['quotation'] = QUOTATION
-    send_team_personal_mail(
-                            request,
+
+    html = render_to_string(request, 'base_invitation_mail.html', data=html_data)
+    text = render_to_string(request, 'base_invitation_mail.txt', data=text_data)    
+    
+    send_team_common_mail(
                             '%s - update request? (%s)' % (team.name, _get_report_day().strftime("%A, %m/%d/%Y")),
                             team,
-                            'base_invitation_mail.html',
-                            'base_invitation_mail.txt',
-                            html_data,
-                            text_data
+                            html,
+                            text
                             )
 
 
@@ -121,4 +125,9 @@ def digest(request, team):
                  }
     html = render_to_string(request, 'base_summary_mail.html', data=data)
     text = render_to_string(request, 'base_summary_mail.txt', data=data)
-    send_team_common_mail('%s - daily digest (%s)' % (team.name, start_of_report_day.strftime("%A, %m/%d/%Y")), team, html, text)
+    send_team_common_mail('%s - daily digest (%s)' % (team.name, start_of_report_day.strftime("%A, %m/%d/%Y")), 
+                          team, 
+                          html, 
+                          text,
+                          reply_to=False
+                          )

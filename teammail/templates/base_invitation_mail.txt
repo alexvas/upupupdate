@@ -1,7 +1,5 @@
 {{ quotation }}
 ________________________________________________________
-Dear {{ user.name }},
-
 Please submit a report today.
 
 Yours sincerely, 
