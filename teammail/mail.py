@@ -66,10 +66,10 @@ def send_team_common_mail(subject, team, html, text, reply_to=None):
     emails = filter(lambda x: x, emails)
     if not emails:
         return
-    to = emails.pop()
+    to = ', '.join(emails)
     if not to:
         return
-    _send_team_mail(team, to, subject, html, text, cc=', '.join(emails), reply_to=reply_to)
+    _send_team_mail(team, to, subject, html, text, reply_to=reply_to)
 
 
 def _get_report_day():
