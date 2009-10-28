@@ -15,7 +15,7 @@
 {% endfor  %}
 
 {% for reporter in reporters %}
-<h2>{{ reporter.name }}</h2>
+  <tr><td><h2>{{ reporter.name }}</h2></td></tr>
   <tr><td>{{ reporter.message|safe }}</td></tr>
   {% if reporter.images  %}
   <tr><td>

@@ -1,7 +1,7 @@
 cron:
 - description: invitation (Update mail)
   url: /cron/invitation
-  schedule: every day 12:00
+  schedule: every day 08:00
   timezone: US/Central  
 - description: summary (Update Team)
   url: /cron/digest
