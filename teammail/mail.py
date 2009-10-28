@@ -74,12 +74,13 @@ def send_team_common_mail(subject, team, html, text, reply_to=None):
 
 def _get_report_day():
     now = dating.getLocalTime()
-    logging.debug("Now is %s", now.strftime("%A, %m/%d/%Y at %H:%M"))
-    some_noon = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    if some_noon + HALF_A_DAY > now:
-        start_of_report_day = some_noon - 2 * HALF_A_DAY
+    #logging.error("Now is %s", now.strftime("%A, %m/%d/%Y at %H:%M %Z"))
+    some_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    if some_midnight + HALF_A_DAY > now:
+        start_of_report_day = some_midnight - 2 * HALF_A_DAY
     else:
-        start_of_report_day = some_noon
+        start_of_report_day = some_midnight
+    #logging.error("start_of_report_day is %s", start_of_report_day.strftime("%A, %m/%d/%Y at %H:%M %Z"))
     return start_of_report_day
 
 
