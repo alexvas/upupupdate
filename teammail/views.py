@@ -238,6 +238,7 @@ def incoming(request):
         lines = lines[index:]
         lines.reverse()
         body = "<br/>\n".join(lines)
+        body = _check_for_outlook(body)
         pair_collector = PairTagCollector()
         pair_collector.feed(body)
         pair_collector.close()
@@ -268,6 +269,15 @@ def incoming(request):
 
     models.Report(user=user, team=team, body=body).put()
     return HttpResponse()
+
+
+def _check_for_outlook(content):
+    if content.find("<p class='MsoNormal'>") < 0:
+        return content
+    match = re.search("<div style='border:none;border-top:solid #[A-F0-9]{3,6}[^>]+>") 
+    if not match:
+        return content
+    return content[:match.start()]
 
 
 def create_admin_user(request):

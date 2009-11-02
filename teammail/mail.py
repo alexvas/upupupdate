@@ -14,6 +14,7 @@ QUOTATION = ("^^^ Reply above this line to post a reply ^^^")
 QUOTATION_HTML = ('<tr class="upupupdate_quote"><td>' + QUOTATION + '<hr/></td></tr>')
 
 HALF_A_DAY = datetime.timedelta(hours=12)
+FIVE_MINUTES = datetime.timedelta(minutes=5)
 
 def _get_scaled_name(name):
     if name.endswith('.jpg'):
@@ -75,11 +76,9 @@ def send_team_common_mail(subject, team, html, text, reply_to=None):
 def _get_report_day():
     now = dating.getLocalTime()
     #logging.error("Now is %s", now.strftime("%A, %m/%d/%Y at %H:%M %Z"))
-    some_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    if some_midnight + HALF_A_DAY > now:
-        start_of_report_day = some_midnight - 2 * HALF_A_DAY
-    else:
-        start_of_report_day = some_midnight
+    # amendment for possible job start delay
+    recently = now - FIVE_MINUTES
+    start_of_report_day = recently.replace(hour=0, minute=0, second=0, microsecond=0)
     #logging.error("start_of_report_day is %s", start_of_report_day.strftime("%A, %m/%d/%Y at %H:%M %Z"))
     return start_of_report_day
 
@@ -114,7 +113,9 @@ def digest(request, team):
     for user in users:
         reports = user.report_set.filter('added_date >', start_of_report_day).filter('team', team).fetch(models.ALL)
         if reports:
-            user.message = reports[-1].body
+            report = reports[-1]
+            user.message = report.body
+            user.local_time = dating.getLocalTime(report.added_date)
             reporters.append(user)
         else:
             absents.append(user)
