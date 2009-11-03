@@ -73,7 +73,7 @@ Central_tz = Central_tzinfo()
 
 def getLocalTime(utc_time=None):
     if utc_time:
-        return utc_time.astimezone(Central_tz)
+        return utc_time.replace(tzinfo=GMT_tz).astimezone(Central_tz)
     else:
         return datetime.now().replace(tzinfo=GMT_tz).astimezone(Central_tz)
     

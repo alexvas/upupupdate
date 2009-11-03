@@ -1,5 +1,5 @@
 {% for report in reports %}
 <h2>{{ report.team.name }}</h2>
-<h3>{{ report.added_date|date:"r" }}</h3>
+<h3>{{ report.local_time|date:"g:i a" }}</h3>
 {{ report.body|safe }}
 {% endfor %}

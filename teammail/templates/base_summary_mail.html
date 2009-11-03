@@ -15,7 +15,7 @@
 {% endfor  %}
 
 {% for reporter in reporters %}
-  <tr><td><h2>{{ reporter.name }}</h2></td></tr>
+  <tr><td><span style="font-weight: bold; font-size: 123.1%; margin: 0 1em 0 0;">{{ reporter.name }}</span> {{ reporter.local_time|date:"g:i a" }}</td></tr>
   <tr><td>{{ reporter.message|safe }}</td></tr>
   {% if reporter.images  %}
   <tr><td>
