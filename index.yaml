@@ -66,20 +66,17 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
-# Used 241 times in query history.
 - kind: teammail_contact
   properties:
   - name: is_active
   - name: name
 
-# Used 550 times in query history.
 - kind: teammail_contact
   properties:
   - name: is_active
   - name: teams
   - name: name
 
-# Used 874 times in query history.
 - kind: teammail_team
   properties:
   - name: is_active

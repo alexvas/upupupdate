@@ -1,0 +1,5 @@
+Most of the code here is taken from App Engine Patch project
+http://bitbucket.org/gumptioncom/appenginepatch-sample/
+which is distributed under it's own license.
+Other code (mainly teammail and teammates modules) is copyrited by Alexander Vasiljev (a.a.vasiljev@googlewave.com) and licensed under GNU GPL v3 license:
+http://www.gnu.org/licenses/gpl.html
