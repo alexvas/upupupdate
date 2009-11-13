@@ -280,16 +280,16 @@ def _check_for_outlook(content):
     return content[:match.start()]
 
 
-def create_admin_user(request):
-    user = users.User.get_by_key_name('admin')
-    if not user or user.username != 'admin' or not (user.is_active and
-            user.is_staff and user.is_superuser and
-            user.check_password('admin')):
-        user = users.User(key_name='admin', email='admin@localhost.org', name='Boss Admin',
-            is_active=True, is_staff=True, is_superuser=True, username='admin')
-        user.set_password('adminno')
-        user.put()
-    return HttpResponse()
+#def create_admin_user(request):
+#    user = users.User.get_by_key_name('admin')
+#    if not user or user.username != 'admin' or not (user.is_active and
+#            user.is_staff and user.is_superuser and
+#            user.check_password('admin')):
+#        user = users.User(key_name='admin', email='admin@localhost.org', name='Boss Admin',
+#            is_active=True, is_staff=True, is_superuser=True, username='admin')
+#        user.set_password('adminno')
+#        user.put()
+#    return HttpResponse()
 
 def _embed_application_admin_user_list_forms(users, request=None):
     for user in users:
